@@ -3,6 +3,9 @@ const path = require("path");
 const app = express();
 const PORT = 9000;
 const crypto = require("crypto");
+const cors = require("cors");
+
+app.use(cors());
 
 class Block {
     constructor(index, timestamp, data, previourHash = "0") {

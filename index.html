@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Local Blockchain</title>
+</head>
+<body>
+    <h1>amounts</h1>
+    <table id="amountsTable" border="1">
+        <thead>
+            <tr>
+                <th>amount</th>
+                <th>blance</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <h2>Transfer</h2>
+    <div>
+        <input type="text" id="sender" placeholder="Sender">
+        <input type="text" id="recipient" placeholder="Recipient">
+        <input type="number" id="amount" placeholder="Amount">
+        <button onclick="transferCoins()">Transfer</button>
+    </div>
+
+    <script>
+        const API_BASE = "http://localhost:9000/api";
+
+        async function refreshamountsUI() {
+            try {
+                const response = await fetch(`${API_BASE}/blance`);
+                const amounts = await response.json();
+                const tbody = document.querySelector('#amountsTable tbody');
+                tbody.innerHTML = '';
+                amounts.forEach(({ amount, blance }) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `<td>${amount}</td><td>${blance} BOB</td>`;
+                    tbody.appendChild(row);
+                });
+            } catch (error) {
+                console.error("Failed to fetch blances:", error);
+            }
+        }
+
+        async function transferCoins() {
+            const sender = document.getElementById('sender').value;
+            const recipient = document.getElementById('recipient').value;
+            const amount = document.getElementById('amount').value;
+
+            if (!sender || !recipient || !amount) {
+                alert("Please fill all fields");
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/transfer`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ sender, recipient, amount })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    console.log(`Transferred ${amount} from ${sender} to ${recipient}`);
+                    refreshamountsUI();
+                } else {
+                    console.error(result.error);
+                }
+            } catch (error) {
+                console.error("Transfer error:", error);
+            }
+        }
+
+        setInterval(refreshamountsUI, 2000);
+        refreshamountsUI();
+    </script>
+</body>
+</html>
